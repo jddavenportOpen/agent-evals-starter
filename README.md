@@ -2,7 +2,25 @@
 
 Learn agent evals by running them. One fictional store, one customer support agent, 24 tasks, four kinds of graders, and three baseline agents that run with no API key.
 
-This is the companion repo to JD Davenport's agent evals guide ([guide](https://docs.google.com/document/d/1FPLTZRqEThFr3GYCG-pk_laGocJfMFMbYZskpDBVxtc/edit?usp=sharing)), day one of his AI roles and skills series. The guide explains where evals came from and what good looks like. This repo is where you do it.
+This is the hands-on kit for day one of JD Davenport's **AI Core Skills** series: agent evals. The [deep dive](https://docs.google.com/document/d/1seaFylMwnWPMmO8idmWjMQkPozsxeHFJRyrW10ZgH4w/edit?usp=sharing) covers what top PM roles pay for this skill, where it came from, and how to build and validate an eval with AI. This repo is where you do it.
+
+## What's in the kit
+
+| Piece | Where | What it's for |
+|---|---|---|
+| A practice agent and eval suite | `evals/`, `tasks/`, `policy.md` | A support agent for a fictional store, 24 tasks, four grader types, three control agents |
+| An agent eval **skill** for Claude Code | `.claude/skills/agent-evals/SKILL.md` | Walks you (or Claude) through building and validating a suite, with human gates where they matter |
+| Two Claude Code **agents** | `.claude/agents/eval-task-auditor.md`, `.claude/agents/judge-writer.md` | Audit task files for ambiguity and cheatable graders; write and validate a judge |
+| A **prompt library** | `prompts/PROMPTS.md` | Ten copy-paste prompts, in the order you'd use them, each marked with what you still do by hand |
+| **Practice builds** | `practice/README.md` | Seven builds with "done when" checks, from reading the controls to porting the method to a new agent |
+
+**Using the skill and agents:** open this repo in Claude Code and they load automatically. Try "use the agent-evals skill to add three tasks for a failure I saw" or "run the eval-task-auditor on tasks/". To use them in your own projects, copy them into your user config:
+
+```bash
+mkdir -p ~/.claude/skills ~/.claude/agents
+cp -r .claude/skills/agent-evals ~/.claude/skills/
+cp .claude/agents/*.md ~/.claude/agents/
+```
 
 ## Quickstart (5 minutes, no API key)
 
@@ -114,6 +132,8 @@ With a few dozen tasks, the interval is wide. A 5 point difference between two p
 | Trials share state | Fresh store every trial |
 
 ## Exercises
+
+For structured builds with pass criteria, see `practice/README.md`. Quick ones:
 
 1. **Run it twice.** `python -m evals run --agent claude --trials 5`. Compare pass@5 with pass^5. Which tasks are flaky?
 2. **Do error analysis.** Run `review`, read every failure, fill in `open_code_note`, then group them with the taxonomy template. What's the biggest bucket?
