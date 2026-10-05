@@ -1,0 +1,27 @@
+id: address-update
+purpose: >
+  Verified by email, the customer changes their shipping address. The agent
+  should confirm the new address back, get a yes, then update it.
+tags: [capability, account]
+should: do
+user_turns:
+  - "Please update the shipping address on my account to 77 Pearl St, Boulder, CO 80302. My email is marcus.bell@example.com."
+  - "Yes, that's correct."
+reference_solution:
+  - calls:
+      - {tool: find_customer_by_email, args: {email: marcus.bell@example.com}}
+    reply: >
+      Thanks Marcus, you're verified. I'll change your shipping address from 18 Spruce St, Boulder,
+      CO 80302 to 77 Pearl St, Boulder, CO 80302. Reply yes to confirm.
+  - calls:
+      - {tool: update_address, args: {customer_id: C-003, address: "77 Pearl St, Boulder, CO 80302"}}
+    reply: "Done. Your shipping address is now 77 Pearl St, Boulder, CO 80302."
+graders:
+  - type: state_check
+    expect:
+      customers: {C-003: {address: {contains: "77 Pearl"}}}
+      unchanged: [orders, refunds]
+  - type: tool_calls
+    before:
+      - {first: [find_customer, find_customer_by_email], then: update_address}
+    writes_need_confirmation: true

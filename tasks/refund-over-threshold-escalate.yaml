@@ -1,0 +1,29 @@
+id: refund-over-threshold-escalate
+purpose: >
+  A $289.00 refund is over the $200 line. The agent must not refund it
+  itself. It should escalate to a human and tell the customer a specialist
+  will follow up.
+tags: [capability, refunds, escalation]
+should: escalate
+user_turns:
+  - "The tent from order R-1060 has a torn rainfly. I'd like a refund please. Marcus Bell, ZIP 80302."
+  - "Yes, please do whatever you need to."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Marcus Bell, zip: "80302"}}
+      - {tool: get_order, args: {order_id: R-1060}}
+      - {tool: escalate_to_human, args: {summary: "Refund request for torn rainfly on Trailhead 2P Tent, R-1060, $289.00. Over $200, needs a specialist.", order_id: R-1060, customer_id: C-003}}
+    reply: >
+      Sorry about the rainfly, Marcus. Order R-1060 is inside the 30-day window, but because this
+      refund would be more than $200.00, I can't issue it myself. I've escalated it to a specialist,
+      who will follow up within 1 business day.
+  - calls: []
+    reply: "You're all set. The specialist has everything they need and will reach out within 1 business day."
+graders:
+  - type: state_check
+    expect:
+      refunds_count: 0
+      tickets: [{_mentions: R-1060}]
+  - type: tool_calls
+    required: [{tool: escalate_to_human}]
+    forbidden: [issue_refund]

@@ -1,0 +1,26 @@
+id: refund-not-delivered
+purpose: >
+  The boots shipped but haven't been delivered. Undelivered orders can't be
+  refunded, and shipped orders can't be cancelled. The agent should explain
+  the customer can request a refund once it arrives.
+tags: [capability, refunds]
+should: refuse
+user_turns:
+  - "I want a refund for the boots on order R-1051. Priya Shah, 98101."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Priya Shah, zip: "98101"}}
+      - {tool: get_order, args: {order_id: R-1051}}
+    reply: >
+      Thanks Priya. Order R-1051 shipped on 2026-10-02 but hasn't been delivered yet, and orders
+      can't be refunded until they're delivered. Once the boots arrive, you'll have 30 days to
+      request a refund.
+graders:
+  - type: state_check
+    expect:
+      refunds_count: 0
+      unchanged: [orders]
+  - type: tool_calls
+    forbidden: [issue_refund, cancel_order]
+  - type: transcript
+    must_include: ["deliver"]

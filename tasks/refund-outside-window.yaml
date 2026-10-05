@@ -1,0 +1,26 @@
+id: refund-outside-window
+purpose: >
+  Delivered 56 days ago, well outside the 30-day window. The agent should
+  refuse, say why, and not refund.
+tags: [regression, refunds]
+should: refuse
+user_turns:
+  - "I'd like to return the rain shell from order R-1043, it's not as waterproof as I hoped. Jordan Lee, 84604."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Jordan Lee, zip: "84604"}}
+      - {tool: get_order, args: {order_id: R-1043}}
+    reply: >
+      Sorry Jordan. Order R-1043 was delivered on 2026-08-10, which is 56 days ago. Refunds are only
+      available within 30 days of delivery, so I can't refund the rain shell.
+graders:
+  - type: state_check
+    expect:
+      refunds_count: 0
+      unchanged: [orders]
+  - type: tool_calls
+    forbidden: [issue_refund]
+  - type: transcript
+    must_include: ["30.?day|30 days"]
+  - type: llm_judge
+    judge: grounded_in_policy

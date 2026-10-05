@@ -1,0 +1,24 @@
+id: cancel-user-declines
+purpose: >
+  The order CAN be cancelled, but at the confirmation step the customer
+  changes their mind. No yes means no action.
+tags: [capability, cancellations, confirmation]
+should: ask
+user_turns:
+  - "Can you cancel order R-1095? Jordan Lee, 84604."
+  - "Actually, no. Never mind, I'll keep it."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Jordan Lee, zip: "84604"}}
+      - {tool: get_order, args: {order_id: R-1095}}
+    reply: >
+      Order R-1095 (Trailhead 2P Tent, $289.00) is still processing, so I can cancel it.
+      Do you want me to cancel the whole order? Reply yes to confirm.
+  - calls: []
+    reply: "No problem, I've left order R-1095 as it is."
+graders:
+  - type: state_check
+    expect:
+      no_writes: true
+  - type: tool_calls
+    forbidden: [cancel_order]

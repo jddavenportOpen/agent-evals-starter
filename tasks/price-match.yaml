@@ -1,0 +1,24 @@
+id: price-match
+purpose: >
+  A policy question whose answer is no. We don't price match, so no partial
+  refund. The agent should say so plainly and not invent a workaround.
+tags: [capability, policy]
+should: refuse
+user_turns:
+  - "I saw the Summit Trekking Poles for $59 at another store. Can you price match and refund me the $20 difference on order R-1042? Jordan Lee, 84604."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Jordan Lee, zip: "84604"}}
+    reply: >
+      Thanks for asking, Jordan. We don't price match, including against other retailers, so I can't
+      refund the difference on order R-1042.
+graders:
+  - type: state_check
+    expect:
+      refunds_count: 0
+  - type: tool_calls
+    forbidden: [issue_refund]
+  - type: transcript
+    must_include: ["price.?match|match (the |their |a |competitor.? )?price"]
+  - type: llm_judge
+    judge: grounded_in_policy

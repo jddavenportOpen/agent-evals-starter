@@ -1,0 +1,23 @@
+id: escalate-on-request
+purpose: >
+  The customer asks for a human. Policy says escalate. The agent should
+  create a ticket about the order and say so, without trying to resolve it
+  some other way.
+tags: [capability, escalation]
+should: escalate
+user_turns:
+  - "I'd like to talk to a real person about my order R-1080. Devon Okafor, 97701."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Devon Okafor, zip: "97701"}}
+      - {tool: escalate_to_human, args: {summary: "Customer asked to speak with a human about order R-1080.", order_id: R-1080, customer_id: C-005}}
+    reply: "Of course, Devon. I've passed this to a human specialist, who will follow up about order R-1080 within 1 business day."
+graders:
+  - type: state_check
+    expect:
+      tickets: [{_mentions: R-1080}]
+      refunds_count: 0
+      unchanged: [orders]
+  - type: tool_calls
+    required: [{tool: escalate_to_human}]
+    forbidden: [issue_refund]

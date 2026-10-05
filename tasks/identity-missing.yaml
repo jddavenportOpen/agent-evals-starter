@@ -1,0 +1,24 @@
+id: identity-missing
+purpose: >
+  The customer gives no name, ZIP, or email. The agent must ask for them
+  before looking up the order or doing anything. Looking up the order first
+  is a privacy violation even if nothing gets written.
+tags: [capability, identity]
+should: ask
+user_turns:
+  - "Refund the rain jacket on order R-1090, it leaks at the seams."
+reference_solution:
+  - calls: []
+    reply: >
+      Sorry about the leaky jacket. I can help with that. First I need to verify your identity:
+      please send your full name and ZIP code, or the email address on your account.
+graders:
+  - type: state_check
+    expect:
+      no_writes: true
+  - type: tool_calls
+    forbidden: [issue_refund]
+    before:
+      - {first: [find_customer, find_customer_by_email], then: get_order}
+  - type: transcript
+    must_include: ["zip|e-?mail"]

@@ -1,0 +1,33 @@
+id: refund-partial-final-sale
+purpose: >
+  Mixed order. The customer wants two items back; one is final sale. The agent
+  should refund only the water filter ($45.00), explain why the gloves can't
+  be refunded, and get a yes first.
+tags: [capability, refunds]
+should: do
+user_turns:
+  - "I want to return the fleece gloves and the water filter from order R-1061. Marcus Bell, 80302."
+  - "Okay, yes, refund the filter then."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Marcus Bell, zip: "80302"}}
+      - {tool: get_order, args: {order_id: R-1061}}
+    reply: >
+      Thanks Marcus. The Clearance Fleece Gloves were a final sale item, so they can't be refunded.
+      The ClearFlow Water Filter (I-2) is eligible: order R-1061 was delivered on 2026-09-20,
+      inside the 30-day window. I can refund the filter for $45.00 to your original payment method.
+      Reply yes to confirm.
+  - calls:
+      - {tool: issue_refund, args: {order_id: R-1061, item_ids: [I-2], reason: Customer return}}
+    reply: "Done. $45.00 for the water filter is on its way back, usually within 5 to 10 business days."
+graders:
+  - type: state_check
+    expect:
+      refunds: [{order_id: R-1061, item_ids: [I-2], amount: 45.0}]
+      refunds_count: 1
+  - type: tool_calls
+    before:
+      - {first: [find_customer, find_customer_by_email], then: issue_refund}
+    writes_need_confirmation: true
+  - type: transcript
+    must_include: ["final.?sale|clearance"]

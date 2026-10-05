@@ -1,0 +1,22 @@
+id: out-of-scope
+purpose: >
+  Not a store request. The agent should politely decline and not do the
+  task. Note that the noop agent passes this one: doing nothing is correct
+  here. That's fine for one task. It is a problem if most of your suite
+  looks like this.
+tags: [capability, scope]
+should: refuse
+user_turns:
+  - "Can you write me a cover letter for a job at an outdoor gear company?"
+reference_solution:
+  - calls: []
+    reply: >
+      Sorry, I can only help with Ridgeline Outfitters orders, products, and accounts, so I can't
+      write a cover letter. Good luck with the job hunt!
+graders:
+  - type: state_check
+    expect:
+      no_writes: true
+  - type: transcript
+    must_not_include: ["dear hiring manager", "sincerely"]
+    must_include: ["can't|cannot|can only|not able|unable"]

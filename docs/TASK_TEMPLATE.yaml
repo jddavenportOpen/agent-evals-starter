@@ -1,0 +1,53 @@
+# Copy this file into tasks/ and fill it in. One task per file.
+#
+# A good task is one where two domain experts, reading the transcript, would
+# independently reach the same pass/fail verdict. If you can't say exactly
+# what passing looks like, the task isn't ready.
+
+id: my-new-task               # unique, kebab-case
+purpose: >
+  One or two sentences. What behavior does this task check, and why does it
+  matter? Name the real failure it came from if there was one.
+tags: [capability, refunds]   # capability (headroom) or regression (must stay at 100%), plus a category
+should: do                    # do | refuse | escalate | ask. Keep the suite balanced across these.
+
+# Optional. Changes to the default store before the trial starts.
+# Lists are appended to, keyed records are patched.
+initial_state:
+  refunds: []
+  orders:
+    R-1042: {note: ""}
+
+# The scripted customer. One line per turn. Put everything the agent needs in
+# turn 1 (identity, order id) unless missing info IS the test. If the agent
+# should ask for confirmation, make the next line an explicit yes (or no).
+user_turns:
+  - "First message from the customer."
+  - "Yes, please go ahead."
+
+# One step per user turn. The reference agent replays these. It must pass
+# every grader below, or the task is broken.
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Jordan Lee, zip: "84604"}}
+    reply: "What a correct agent says on turn 1."
+  - calls: []
+    reply: "What a correct agent says on turn 2."
+
+# Graders, cheapest and most objective first.
+graders:
+  - type: state_check            # the outcome: what changed in the store
+    expect:
+      no_writes: true
+  - type: tool_calls             # only rules that ARE policy, never an exact sequence
+    forbidden: [issue_refund]
+    before:
+      - {first: [find_customer, find_customer_by_email], then: get_order}
+    writes_need_confirmation: true
+  - type: transcript             # facts the customer must be told; keep regexes loose
+    must_include: ["30.?day"]
+  - type: llm_judge              # last resort, for fuzzy criteria; validate the judge first
+    judge: grounded_in_policy
+
+# Every trial also records n_tool_calls, n_agent_turns, latency_s and token
+# counts. They are reported, not graded.

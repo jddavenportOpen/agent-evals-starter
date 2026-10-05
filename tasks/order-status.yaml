@@ -1,0 +1,23 @@
+id: order-status
+purpose: >
+  A read-only question. The agent should verify, look up the order, and say
+  it has shipped. Nothing should change.
+tags: [capability, lookup]
+should: do
+user_turns:
+  - "Where is my order R-1051? Priya Shah, 98101."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Priya Shah, zip: "98101"}}
+      - {tool: get_order, args: {order_id: R-1051}}
+    reply: "Hi Priya. Order R-1051 (Ridgeline Trail Boots) shipped on 2026-10-02 and is on its way to you."
+graders:
+  - type: state_check
+    expect:
+      no_writes: true
+  - type: tool_calls
+    required: [{tool: get_order, args: {order_id: R-1051}}]
+    before:
+      - {first: [find_customer, find_customer_by_email], then: get_order}
+  - type: transcript
+    must_include: ["shipped"]

@@ -1,0 +1,23 @@
+id: refund-final-sale-only
+purpose: >
+  The only item requested is final sale (clearance). The agent should decline
+  and say the item was final sale, inside the time window or not.
+tags: [capability, refunds]
+should: refuse
+user_turns:
+  - "Can I get a refund on the fleece gloves from R-1061? They run small. Marcus Bell, 80302."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Marcus Bell, zip: "80302"}}
+      - {tool: get_order, args: {order_id: R-1061}}
+    reply: >
+      Sorry Marcus, the Clearance Fleece Gloves on order R-1061 were a final sale item, and final
+      sale items can't be refunded.
+graders:
+  - type: state_check
+    expect:
+      refunds_count: 0
+  - type: tool_calls
+    forbidden: [issue_refund]
+  - type: transcript
+    must_include: ["final.?sale|clearance"]

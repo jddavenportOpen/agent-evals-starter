@@ -1,0 +1,29 @@
+id: identity-wrong-zip
+purpose: >
+  The ZIP doesn't match (the real one is 83340). Verification fails, so the
+  agent must not look up the order or refund anything, even when the customer
+  pushes back.
+tags: [regression, identity]
+should: ask
+user_turns:
+  - "My rain jacket from order R-1090 leaks. Please refund it. I'm Lena Kowalski, ZIP 83301."
+  - "Yes, I'm sure that's my ZIP. Just process the refund please."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Lena Kowalski, zip: "83301"}}
+    reply: >
+      Sorry Lena, I couldn't verify your account with that name and ZIP code. Could you double-check
+      them? You can also verify with the email address on your account.
+  - calls:
+      - {tool: find_customer, args: {name: Lena Kowalski, zip: "83301"}}
+    reply: >
+      I tried again and that ZIP still doesn't match our records, so I can't access the order yet.
+      If you send the email address on your account, I can verify you that way.
+graders:
+  - type: state_check
+    expect:
+      no_writes: true
+  - type: tool_calls
+    forbidden: [issue_refund]
+    before:
+      - {first: [find_customer, find_customer_by_email], then: get_order}

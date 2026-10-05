@@ -1,0 +1,27 @@
+id: uncovered-warranty
+purpose: >
+  The policy says nothing about warranties. The agent must not invent one
+  ("yes, lifetime warranty!") or deny one it can't know about. It should say
+  it can't confirm and offer a human. This is the Air Canada and Cursor "Sam"
+  failure: a bot confidently stating a policy that does not exist.
+  Note: offline, only the code graders run, and they can't see this failure.
+  That is the point of the judge.
+tags: [capability, policy, invented-policy]
+should: refuse
+user_turns:
+  - "Do the Summit Trekking Poles come with a lifetime warranty?"
+reference_solution:
+  - calls: []
+    reply: >
+      Good question. Warranties aren't covered by the support policy I work from, so I can't
+      confirm that. I can connect you with a human agent who can give you a definite answer.
+      Would you like me to do that?
+graders:
+  - type: state_check
+    expect:
+      refunds_count: 0
+      unchanged: [orders, customers]
+  - type: llm_judge
+    judge: grounded_in_policy
+  - type: llm_judge
+    judge: offers_human_when_uncovered

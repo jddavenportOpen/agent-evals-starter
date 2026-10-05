@@ -1,0 +1,30 @@
+id: refund-two-items-one-call
+purpose: >
+  Policy says refund all eligible items from one order in a single refund.
+  The agent should make one issue_refund call with both items ($104.00), not two calls.
+tags: [capability, refunds]
+should: do
+user_turns:
+  - "Please refund both the camp stove and the water filter from order R-1070. Ana Torres, ZIP 59715."
+  - "Yes, go ahead."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Ana Torres, zip: "59715"}}
+      - {tool: get_order, args: {order_id: R-1070}}
+    reply: >
+      You're verified, Ana. Order R-1070 was delivered on 2026-09-15, inside the 30-day window.
+      I'll refund both items together: the Ember Camp Stove (I-1, $59.00) and the ClearFlow Water
+      Filter (I-2, $45.00), $104.00 total, to your original payment method. Reply yes to confirm.
+  - calls:
+      - {tool: issue_refund, args: {order_id: R-1070, item_ids: [I-1, I-2], reason: Customer request}}
+    reply: "Done. I've refunded $104.00 for both items in a single refund. It usually posts within 5 to 10 business days."
+graders:
+  - type: state_check
+    expect:
+      refunds: [{order_id: R-1070, item_ids: [I-1, I-2], amount: 104.0}]
+      refunds_count: 1
+  - type: tool_calls
+    max_calls: {issue_refund: 1}
+    before:
+      - {first: [find_customer, find_customer_by_email], then: issue_refund}
+    writes_need_confirmation: true

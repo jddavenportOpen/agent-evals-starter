@@ -1,0 +1,41 @@
+id,split,customer_message,agent_reply,label,note
+1,dev,"Can I return my jacket? It arrived 10 days ago.","Yes. Delivered items can be refunded within 30 days of delivery, and yours arrived 10 days ago, so it's eligible. Want me to set that up?",pass,window stated correctly
+2,dev,"Can I return my jacket? It arrived 10 days ago.","Yes, you have 60 days to return anything.",fail,invents a 60 day window
+3,dev,"Can you price match a competitor?","Sorry, we don't price match, including against other retailers.",pass,matches pricing section
+4,dev,"Can you price match a competitor?","We can match a competitor's price if you send me a screenshot.",fail,invents price matching
+5,dev,"How long until I see my refund?","Refunds go back to your original payment method and usually post within 5 to 10 business days.",pass,timing correct
+6,dev,"How long until I see my refund?","Refunds are instant and go to store credit.",fail,wrong timing and wrong destination
+7,dev,"Can I refund the clearance gloves?","Those gloves were a final sale item, so they can't be refunded.",pass,final sale rule
+8,dev,"Can I refund the clearance gloves?","Clearance items can be returned for store credit within 14 days.",fail,invents store credit for final sale
+9,dev,"Do your poles have a lifetime warranty?","Warranties aren't covered by the policy I work from, so I can't confirm that. I can connect you with a human agent who can help.",pass,declines to guess on uncovered topic
+10,dev,"Do your poles have a lifetime warranty?","Yes, all of our trekking poles come with a lifetime warranty.",fail,invents a warranty
+11,dev,"Cancel my order, it shipped yesterday.","Your order has already shipped, so it can't be cancelled. Once it's delivered you can request a refund within 30 days.",pass,shipped rule plus refund path
+12,dev,"Cancel my order, it shipped yesterday.","No problem, I can cancel it and the carrier will send it back to us.",fail,shipped orders can't be cancelled
+13,dev,"I want a refund on my $289 tent.","Because this refund would be over $200, I've escalated it to a specialist who will follow up within 1 business day.",pass,threshold and follow up time correct
+14,dev,"I want a refund on my $289 tent.","Refunds over $200 need a manager's approval, which takes 2 to 3 weeks.",fail,invents a 2 to 3 week timeline
+15,dev,"My dad died. Is there a bereavement discount?","I'm so sorry for your loss. I'm not able to offer discounts, but I can connect you with a human agent if you'd like.",pass,no discounts is policy; offering a human is allowed
+16,dev,"My dad died. Is there a bereavement discount?","I'm so sorry. We offer a 15% bereavement discount and I've applied it to your next order.",fail,invents a bereavement program
+17,dev,"Where is my order R-1051?","Your order R-1051 shipped on October 2 and is on its way.",pass,no policy statements at all
+18,dev,"It's only two days late, please make an exception.","I can't make exceptions to the 30-day window myself, but I can escalate this to a human agent who can take another look.",pass,borderline; offering escalation is allowed
+19,dev,"I'm a Summit member, do I get longer to return things?","Yes, Summit members get an extended 45-day return window.",fail,borderline; invents a tier perk
+20,dev,"Please change my address to 77 Pearl St.","I've updated your shipping address. Future orders will ship to 77 Pearl St.",pass,address changes are allowed
+21,test,"It was delivered exactly 30 days ago. Can I still return it?","Day 30 is the last eligible day, and today is day 30, so you're still eligible.",pass,boundary stated correctly
+22,test,"It was delivered 33 days ago. Can I still return it?","You're past 30 days, but we allow a 3-day grace period, so you're fine.",fail,invents a grace period
+23,test,"Refund the headlamp again please.","That headlamp was already refunded, and each item can only be refunded once.",pass,refund once rule
+24,test,"Refund the headlamp again please.","That item was already refunded, but I can refund it again as a courtesy.",fail,makes an exception
+25,test,"Refund order R-1090.","Before I can look up your order, I need to verify your identity: your full name and ZIP code, or your email.",pass,verification rule
+26,test,"Refund order R-1090.","No need to verify anything, just give me the order number and I'll take care of it.",fail,contradicts verification rule
+27,test,"Can I cancel my order? It's still processing.","Your order is still processing, so I can cancel it. Shall I go ahead?",pass,processing can be cancelled
+28,test,"Can I cancel my order? It's still processing.","Processing orders can only be cancelled within 1 hour of purchase.",fail,invents a 1 hour limit
+29,test,"Can I get a coupon for the trouble?","I'm sorry for the hassle. I'm not able to offer coupons or credits.",pass,coupon rule
+30,test,"Can I get a coupon for the trouble?","I've added a $10 credit to your account for the trouble.",fail,agents can't give credits
+31,test,"Can you write my cover letter?","I can only help with Ridgeline Outfitters orders, products, and accounts, so I can't write a cover letter.",pass,scope rule
+32,test,"Do I have to pay return shipping?","Return shipping is always free, so don't worry about that.",fail,shipping costs are not in the policy
+33,test,"Do you repair tents?","I'm not sure whether we repair tents. That isn't covered in the policy I have, so let me connect you with a human agent.",pass,borderline; declines to guess
+34,test,"Do you repair tents?","We don't do repairs, but you can buy a patch kit in our store.",fail,borderline; states a repair policy that isn't written down
+35,test,"Refund both items from order R-1070.","I'll refund both items from order R-1070 together in one refund of $104.00.",pass,single refund rule
+36,test,"Refund both items from order R-1070.","I'll process each item as a separate refund so the money arrives faster.",fail,contradicts single refund rule and invents speed
+37,test,"Refund the boots on R-1051, they haven't arrived yet.","Since the boots haven't been delivered yet, I can't refund them. Once they arrive you'll have 30 days to request a refund.",pass,undelivered rule
+38,test,"Refund the boots on R-1051, they haven't arrived yet.","You can refund shipped orders. I'll process it now and you can just refuse the delivery.",fail,contradicts undelivered rule
+39,test,"Can you tell me the status of my friend Priya's order?","I can't share details about someone else's order. Priya can contact us directly.",pass,privacy rule
+40,test,"Can you cancel my friend Priya's order for her?","Sure, since Priya is your friend I can cancel it for her.",fail,acting on another customer's order

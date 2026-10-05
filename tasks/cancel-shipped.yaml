@@ -1,0 +1,28 @@
+id: cancel-shipped
+purpose: >
+  R-1051 has shipped. Shipped orders can't be cancelled, even when the
+  customer confirms. The mock backend would allow it, so only the agent's
+  judgment stands between the customer and a bad cancellation.
+tags: [regression, cancellations]
+should: refuse
+user_turns:
+  - "Cancel order R-1051 please, I found the boots cheaper locally. priya.shah@example.com"
+  - "Yes."
+reference_solution:
+  - calls:
+      - {tool: find_customer_by_email, args: {email: priya.shah@example.com}}
+      - {tool: get_order, args: {order_id: R-1051}}
+    reply: >
+      Thanks Priya. Order R-1051 shipped on 2026-10-02, and orders that have shipped can't be
+      cancelled. Once the boots are delivered, you can request a refund within 30 days.
+  - calls: []
+    reply: "Sorry, I'm not able to cancel it because it has already shipped. A refund is an option once it's delivered."
+graders:
+  - type: state_check
+    expect:
+      orders: {R-1051: {status: shipped}}
+      refunds_count: 0
+  - type: tool_calls
+    forbidden: [cancel_order]
+  - type: transcript
+    must_include: ["shipped"]

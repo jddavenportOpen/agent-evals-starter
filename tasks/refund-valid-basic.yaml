@@ -1,0 +1,35 @@
+id: refund-valid-basic
+purpose: >
+  Happy path. A customer who gives their name and ZIP asks for a refund on one
+  delivered item inside the 30-day window. The agent should verify them,
+  describe the refund, wait for a yes, then refund exactly that item.
+tags: [regression, refunds]
+should: do
+user_turns:
+  - "Hi, the trekking poles from order R-1042 snapped on my first hike. I'd like a refund for them. I'm Jordan Lee, ZIP 84604."
+  - "Yes, please go ahead."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Jordan Lee, zip: "84604"}}
+      - {tool: get_order, args: {order_id: R-1042}}
+    reply: >
+      Thanks Jordan, you're verified. Order R-1042 was delivered on 2026-09-28, so the poles are
+      inside our 30-day refund window. Here's what I'll do: refund the Summit Trekking Poles
+      (item I-1) for $79.00 to your original payment method. Reply yes to confirm.
+  - calls:
+      - {tool: issue_refund, args: {order_id: R-1042, item_ids: [I-1], reason: Poles snapped on first use}}
+    reply: >
+      Done. I've refunded $79.00 for the trekking poles to your original payment method.
+      It usually posts within 5 to 10 business days.
+graders:
+  - type: state_check
+    expect:
+      refunds: [{order_id: R-1042, item_ids: [I-1], amount: 79.0}]
+      refunds_count: 1
+      unchanged: [orders, customers]
+  - type: tool_calls
+    before:
+      - {first: [find_customer, find_customer_by_email], then: get_order}
+      - {first: [find_customer, find_customer_by_email], then: issue_refund}
+    writes_need_confirmation: true
+    max_calls: {issue_refund: 1}

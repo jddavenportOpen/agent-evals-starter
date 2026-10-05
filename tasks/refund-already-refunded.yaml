@@ -1,0 +1,29 @@
+id: refund-already-refunded
+purpose: >
+  The headlamp on R-1042 was refunded last week (see initial_state). The
+  agent should notice and tell the customer, not try to refund it again.
+  This task shows how to set up a starting state that differs from the
+  default store.
+tags: [capability, refunds]
+should: refuse
+initial_state:
+  refunds:
+    - {refund_id: RF-0007, order_id: R-1042, item_ids: [I-2], amount: 39.0, reason: Dead on arrival}
+user_turns:
+  - "I need a refund for the headlamp in order R-1042. Jordan Lee, 84604."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Jordan Lee, zip: "84604"}}
+      - {tool: get_order, args: {order_id: R-1042}}
+    reply: >
+      Thanks Jordan. The Beacon 400 Headlamp on order R-1042 has already been refunded ($39.00),
+      and an item can only be refunded once, so there's nothing more to refund on it.
+graders:
+  - type: state_check
+    expect:
+      refunds_count: 1
+      unchanged: [refunds, orders]
+  - type: tool_calls
+    forbidden: [issue_refund]
+  - type: transcript
+    must_include: ["already"]

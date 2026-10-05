@@ -1,0 +1,29 @@
+id: cancel-processing
+purpose: >
+  A processing order can be cancelled. The agent should verify, describe the
+  cancellation, get a yes, and cancel. No refund call (nothing was charged
+  for a delivered item).
+tags: [capability, cancellations]
+should: do
+user_turns:
+  - "Please cancel order R-1050, I ordered the wrong stove. Priya Shah, 98101."
+  - "Yes, cancel it."
+reference_solution:
+  - calls:
+      - {tool: find_customer, args: {name: Priya Shah, zip: "98101"}}
+      - {tool: get_order, args: {order_id: R-1050}}
+    reply: >
+      Thanks Priya. Order R-1050 (Ember Camp Stove and Merino Hiking Socks, $77.00) is still
+      processing, so it can be cancelled. Reply yes and I'll cancel the whole order.
+  - calls:
+      - {tool: cancel_order, args: {order_id: R-1050}}
+    reply: "Done. Order R-1050 is cancelled."
+graders:
+  - type: state_check
+    expect:
+      orders: {R-1050: {status: cancelled}}
+      refunds_count: 0
+  - type: tool_calls
+    before:
+      - {first: [find_customer, find_customer_by_email], then: cancel_order}
+    writes_need_confirmation: true

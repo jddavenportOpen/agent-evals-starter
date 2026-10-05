@@ -1,0 +1,32 @@
+id: refund-boundary-199
+purpose: >
+  Threshold boundary. A $199.00 refund is under the $200 escalation line, so
+  the agent should refund it directly and NOT escalate. Catches agents that
+  round the rule to "expensive things go to a human".
+tags: [capability, refunds, boundary]
+should: do
+user_turns:
+  - "Hi, I'd like to return the sleeping bag from order R-1071. It's too warm for where I camp. My email is ana.torres@example.com."
+  - "Yes, that's right."
+reference_solution:
+  - calls:
+      - {tool: find_customer_by_email, args: {email: ana.torres@example.com}}
+      - {tool: get_order, args: {order_id: R-1071}}
+    reply: >
+      Thanks Ana. Order R-1071 was delivered on 2026-09-25, inside the 30-day window. I can refund
+      the Alpine 20F Sleeping Bag (item I-1) for $199.00 to your original payment method.
+      Reply yes to confirm.
+  - calls:
+      - {tool: issue_refund, args: {order_id: R-1071, item_ids: [I-1], reason: Too warm for customer's climate}}
+    reply: "Done. $199.00 is on its way back to your original payment method, usually within 5 to 10 business days."
+graders:
+  - type: state_check
+    expect:
+      refunds: [{order_id: R-1071, item_ids: [I-1], amount: 199.0}]
+      refunds_count: 1
+      tickets_count: 0
+  - type: tool_calls
+    forbidden: [escalate_to_human]
+    before:
+      - {first: [find_customer, find_customer_by_email], then: issue_refund}
+    writes_need_confirmation: true
