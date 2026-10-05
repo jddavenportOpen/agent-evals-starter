@@ -71,7 +71,7 @@ Use this structure:
 2. Explicit PASS and FAIL definitions, with what is out of scope.
 3. 2 to 4 examples with critiques: one clear pass, one clear fail, at least one borderline.
 4. An "Unknown" option.
-5. Output: JSON with `critique` before `result`. Parse the LAST verdict in the output.
+5. Output: JSON with `critique` before `result`. Parse the LAST verdict in the output (this avoids mis-parsing; it is not an injection defense, so test that instructions inside the transcript can't sway the judge).
 
 ## Step 7: Validate the judge (HUMAN GATE)
 
@@ -83,7 +83,7 @@ Split the labels: a few as few-shot examples (exclude them from scoring), dev fo
 - **TNR** (of human Passes, share the judge passed)
 - **Cohen's kappa** against the human labels
 
-Say which class you treated as positive. If TPR or TNR is below 0.8, iterate on the prompt using dev only, then re-score test once. In the starter repo: `python -m evals validate-judge --judge <name>`.
+Treat Fail as the positive class (the judge's job is to catch failures) and say so. Treat Unknown as an abstention: report it separately, never as Pass. Before looking at results, have the person pick a bar (0.8 for both TPR and TNR is a reasonable start; no published standard exists). If the judge misses it, iterate on the prompt using dev only, then re-score test once. Report the test counts per class: with 10 per class, the interval is very wide. In the starter repo: `python -m evals validate-judge --judge <name>`.
 
 ## Step 8: The validation gates (run all of them, report all of them)
 
@@ -92,13 +92,13 @@ Do not call the suite done until every gate below has a result. Report them as a
 | Gate | How | Pass bar |
 |---|---|---|
 | Reference solutions | Replay every reference solution through the graders | 100%. Anything less is a broken task or grader. |
-| Do-nothing control | An agent that replies "Sorry, I can't help" and calls no tools | Low overall. Look at which tasks it passes: each one needs a check on what the agent says, not just state. |
-| Pushover control | An agent that does whatever the user asks with no checks | Fails every policy task. If it passes one, that task's graders are too loose. |
+| Do-nothing control | An agent that replies "Sorry, I can't help" and calls no tools | Inspect every task it passes. Passing a "nothing changed" check is expected; passing the whole task usually means the task needs a check on what the agent says. |
+| Pushover control | An agent that does whatever the user asks with no checks | Fails every task where obeying breaks the policy. Inspect any pass: either the task allows it, or the graders are too loose. |
 | Cheating control | Ask: what is the cheapest way to pass each grader without doing the work? Try one or two. | No shortcut passes. |
-| Judge validation | Step 7 | TPR and TNR at least 0.8 on held-out labels |
+| Judge validation | Step 7 | Meets the bar set before looking (0.8 is a common starting point), with test counts reported |
 | Task audit | For each task: could two experts disagree? Is the reference right? Is the grader too strict or too loose? | No task flagged "broken" |
 | Human read | The person reads every failing transcript from the first real run | Every failure "seems fair": clear what the agent did wrong |
-| Zero-percent check | Any task at 0% across all trials | Read the transcript. With a capable model, 0% is usually a broken task. |
+| Zero-percent check | Any task at 0% across all trials | Read the transcript. Anthropic's rule of thumb (0% across many trials, around 100, is usually a broken task) is a reason to investigate, not a verdict, especially at 3 trials. |
 
 ## Step 9: Run and report
 
@@ -109,7 +109,7 @@ Run the real agent with at least 3 trials per task (5 if the suite is small). Re
 - per-grader pass rates
 - failures with one-line reasons, grouped by failure category
 
-Remind the person: with a few dozen tasks, differences under about 10 points are noise.
+Remind the person: with a few dozen tasks the interval is wide (about plus or minus 18 points at 24 tasks). Compare versions task by task on the same tasks, and treat trials of one task as related, not independent.
 
 ## Step 10: Keep it alive
 
@@ -117,7 +117,9 @@ Remind the person: with a few dozen tasks, differences under about 10 points are
 - Capability tasks that pass every trial for a while graduate to regression.
 - A capability suite near 100% has stopped teaching you anything. Add harder tasks.
 - Re-read 10 to 20 fresh transcripts a week. New failure modes become new tasks.
-- Re-validate every judge when its prompt or model changes.
+- Re-validate every judge when its prompt or model changes. Prefer a judge model different from the agent's model to limit self-preference.
+- Keep some tasks held out from day-to-day prompt tuning, or your suite turns into a validation set you've overfit.
+- Make sure the agent can't read grader files, answer keys, or earlier trials.
 
 ## What to push back on
 

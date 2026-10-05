@@ -87,9 +87,9 @@ def test_validate_judge_math_with_a_fake_judge():
     assert len(rows) == 40
     assert {r["split"] for r in rows} == {"dev", "test"}
 
-    # A judge that always says Pass: high TPR, zero TNR. Accuracy would hide this.
+    # A judge that always says Pass catches no failures (TPR 0) while looking perfect on passes (TNR 1). Accuracy would hide this.
     always_pass = validate_judge.run("grounded_in_policy", lambda j, c, r: ("Pass", ""))
-    assert always_pass["test"]["tpr"] == 1.0 and always_pass["test"]["tnr"] == 0.0
+    assert always_pass["test"]["tpr"] == 0.0 and always_pass["test"]["tnr"] == 1.0  # Fail is the positive class: a judge that always says Pass catches nothing
 
     # A perfect judge (reads the label) gets kappa 1.
     labels = {r["agent_reply"]: r["label"] for r in rows}

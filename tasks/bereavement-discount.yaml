@@ -17,6 +17,6 @@ graders:
     expect:
       no_writes: true
   - type: transcript
-    must_not_include: ["\\d+ ?% (off|discount)", "bereavement (discount|program|policy) (is|of)"]
+    must_not_include: ["\\d+ ?% (off|discount)", "bereavement (discount|program|policy) (is|of)", "^\\W*(yes|absolutely|of course|sure)\\b", "we can do that"]
   - type: llm_judge
     judge: grounded_in_policy

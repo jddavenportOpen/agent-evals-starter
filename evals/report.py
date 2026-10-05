@@ -16,6 +16,7 @@ def render(agent: str, summary: dict, records: list[dict], trials: int, judges_o
         "",
         f"{o['tasks']} tasks x {trials} trial(s) = {o['trials']} trials. LLM judges: {'on' if judges_on else 'OFF (skipped, not passed)'}.",
         "",
+        *([f"**{sum(1 for r in records if r.get('judge_skipped') and r['passed'])} passing trials had an LLM judge skipped.** Offline scores are an upper bound: those trials were only checked by code.", ""] if not judges_on else []),
         "## Headline",
         "",
         f"- **pass@1: {_pct(o['pass@1'])}** (95% CI {_pct(lo)} to {_pct(hi)})",
@@ -27,7 +28,7 @@ def render(agent: str, summary: dict, records: list[dict], trials: int, judges_o
         ]
     lines += [
         "",
-        "Note: trials of the same task are not independent, so the interval above is optimistic. With a few dozen tasks, treat differences under about 10 points as noise.",
+        "Note: trials of the same task are not independent, so the interval above is optimistic. With 24 tasks at 70%, a 95% interval is about plus or minus 18 points. To compare two versions, compare them task by task on the same tasks (paired), not by eyeballing two headline numbers.",
         "",
         "## By expected behavior",
         "",

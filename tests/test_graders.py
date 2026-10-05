@@ -107,3 +107,12 @@ def test_task_score_ignores_skips_but_needs_a_real_grader():
     assert grade_trial(task, env, t)["passed"] is True
     task_only_judge = {**task, "graders": [{"type": "llm_judge", "judge": "grounded_in_policy"}]}
     assert grade_trial(task_only_judge, env, t)["passed"] is False
+
+
+def test_confirmation_requires_a_real_yes():
+    from evals.graders.tool_calls import is_confirmation
+    for yes in ["Yes, go ahead.", "yep do it", "Confirmed.", "Yes please"]:
+        assert is_confirmation(yes), yes
+    for no in ["No, please do not refund it", "Don't do it", "I can't confirm that",
+               "Yes, but don't refund it yet", "Wait, hold off", "no"]:
+        assert not is_confirmation(no), no

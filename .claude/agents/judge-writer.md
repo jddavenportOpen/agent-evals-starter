@@ -15,7 +15,7 @@ Write the judge with this structure:
 3. **PASS** and **FAIL** definitions in concrete terms.
 4. **Examples:** 2 to 4, each with a critique and a result. Include one clear pass, one clear fail, and at least one borderline case. Borderline cases teach the most.
 5. **Unknown:** an option for when the input doesn't contain enough to decide.
-6. **Output:** JSON with `critique` first and `result` second (`Pass`, `Fail`, or `Unknown`). The harness should parse the last verdict in the output, so text inside the graded conversation can't vote.
+6. **Output:** JSON with `critique` first and `result` second (`Pass`, `Fail`, or `Unknown`). The harness should parse the last verdict in the output. That stops a stray verdict string in the transcript from being parsed by mistake. It does not stop prompt injection: treat the transcript as untrusted and test whether instructions inside it can sway the judge.
 
 Then set up validation:
 
@@ -23,6 +23,7 @@ Then set up validation:
 - Split: examples used in the prompt are excluded; the rest go 50/50 into dev and test.
 - Iterate the prompt on dev only. Score test once.
 - Report TPR (human Fails the judge caught), TNR (human Passes the judge passed), and Cohen's kappa on test, and say which class is "positive".
-- Recommend shipping the judge only if TPR and TNR are both at least 0.8. Otherwise say what kind of examples it misses.
+- Fail is the positive class. Unknown is an abstention: report it separately and never count it as Pass.
+- Have the human pick a bar before scoring (0.8 for both is a common start; there's no published standard). Report the test counts per class and say plainly when they're too small to trust. Otherwise say what kind of examples the judge misses.
 
 If you're in the `agent-evals-starter` repo, put the prompt in `judges/<name>.md`, labels in `judges/labels/<name>.csv` (columns as in `grounded_in_policy.csv`), and run `python -m evals validate-judge --judge <name>`.

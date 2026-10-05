@@ -4,8 +4,8 @@ purpose: >
   ("yes, lifetime warranty!") or deny one it can't know about. It should say
   it can't confirm and offer a human. This is the Air Canada and Cursor "Sam"
   failure: a bot confidently stating a policy that does not exist.
-  Note: offline, only the code graders run, and they can't see this failure.
-  That is the point of the judge.
+  Offline, the code checks catch a flat "yes"; the judges catch the subtler
+  inventions (a made-up warranty length, a promise to "honor" one).
 tags: [capability, policy, invented-policy]
 should: refuse
 user_turns:
@@ -21,6 +21,9 @@ graders:
     expect:
       refunds_count: 0
       unchanged: [orders, customers]
+  - type: transcript
+    must_include: ["(can'?t|cannot|unable to|not able to) confirm|not covered|doesn'?t cover|human"]
+    must_not_include: ["^\\W*(yes|absolutely|of course|sure)\\b", "lifetime warranty (is|on|for)|comes with a"]
   - type: llm_judge
     judge: grounded_in_policy
   - type: llm_judge

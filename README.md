@@ -55,10 +55,10 @@ Offline, with LLM judges skipped:
 | Agent | pass@1 | What it shows |
 |---|---|---|
 | reference | 100% | Every task is solvable and every grader is wired right. If this ever drops below 100%, the eval is broken, not the agent. |
-| noop | 29% | A do-nothing agent passes 7 of 24 tasks. It clears the outcome check (`state_check`) on **16 of 24**, because on most "refuse" tasks the right final state is "nothing changed". Only the tasks that also check what the agent *said* catch it. |
-| pushover | 12% | An agent with no judgment fails nearly everything and trips the regression gate. It even fails the happy path, because it refunds before the customer says yes. |
+| noop | 25% | A do-nothing agent passes 6 of 24 tasks. It clears the outcome check (`state_check`) on **16 of 24**, by design: on every hold task (and two read-only tasks) the right final state is "nothing changed". A database check can't tell a good refusal from a non-answer. Only the checks on what the agent *said* catch it. |
+| pushover | 4% | An agent with no judgment fails nearly everything and trips the regression gate. It even fails the happy path, because it refunds before the customer says yes. |
 
-That noop number is the most important thing in this repo. Without negative controls you would never know that two thirds of your outcome checks can be passed by an agent that does nothing. (The same bug in the wild: a trivial agent that returned empty responses scored 38% on tau-bench's airline tasks.)
+That noop result is the most important thing in this repo. Without a negative control you would never notice that a "nothing changed" check passes for an agent that does nothing at all. Every hold task needs a second check on what the agent said. (The same bug in the wild: a trivial agent that returned empty responses scored 38% on tau-bench's airline tasks.)
 
 ## The store
 
@@ -109,7 +109,7 @@ The steps most practitioners converge on (Anthropic, Hamel Husain and Shreya Sha
 | `transcript` | Loose regexes on what the agent said; a tool-call budget | Facts the customer must be told. Use sparingly. |
 | `llm_judge` | One fuzzy criterion, binary verdict, critique first | Things code can't check, like "did it invent a policy". Skipped (never passed) with no API key. |
 
-Judge prompts live in `judges/*.md`. Each checks one thing, has pass and fail definitions, includes a borderline example, writes its critique before the verdict, and can say Unknown. The parser takes the **last** verdict in the output, so a reply containing the text `"result": "Pass"` can't vote for itself.
+Judge prompts live in `judges/*.md`. Each checks one thing, has pass and fail definitions, includes a borderline example, writes its critique before the verdict, and can say Unknown. The parser takes the **last** verdict in the output, so a reply containing the text `"result": "Pass"` isn't picked up by mistake. That is not a defense against prompt injection: a transcript can still try to talk the judge into a Pass, so test for that.
 
 ## Metrics
 
@@ -117,7 +117,9 @@ Judge prompts live in `judges/*.md`. Each checks one thing, has pass and fail de
 - **pass@k**: chance at least one of k tries succeeds. Fine when a user can retry.
 - **pass^k**: chance all k tries succeed. The honest number for a support agent, because every customer gets one shot. At 75% per try, pass^3 is about 42%.
 
-With a few dozen tasks, the interval is wide. A 5 point difference between two prompts is usually noise. Trials of the same task aren't independent, so treat the interval as optimistic.
+With a few dozen tasks, the interval is wide: at 24 tasks and 70%, a 95% interval is about plus or minus 18 points. To compare two prompts, compare them task by task on the same tasks (paired), and don't read much into a few points either way. Trials of the same task aren't independent, so treat the interval as optimistic.
+
+Offline, LLM judges are skipped. The report says how many passing trials had a judge skipped, because those were only checked by code: offline scores are an upper bound.
 
 ## What good and bad look like, in this repo
 
@@ -139,7 +141,7 @@ For structured builds with pass criteria, see `practice/README.md`. Quick ones:
 2. **Do error analysis.** Run `review`, read every failure, fill in `open_code_note`, then group them with the taxonomy template. What's the biggest bucket?
 3. **Add a task from a failure you saw.** Copy `docs/TASK_TEMPLATE.yaml`. Write the reference solution first, then run `pytest` to prove it passes.
 4. **Break a grader on purpose.** Change an expected amount in `tasks/refund-valid-basic.yaml` to 80.0 and run `pytest`. The reference test catches it. That's why it exists.
-5. **Find the noop's free passes.** Look at the 7 tasks noop passes. For each, decide whether "do nothing" really is correct, or whether the task needs a check on what the agent says.
+5. **Find the noop's free passes.** Look at the 6 tasks noop passes. For each, decide whether "do nothing" really is correct, or whether the task needs a check on what the agent says.
 6. **Write a second judge.** Pick a fuzzy criterion (for example "explains the reason when it declines"). Write `judges/explains_reason.md`, label 40 examples in `judges/labels/`, and validate it before adding it to any task.
 7. **Change the prompt, not the model.** Edit `SYSTEM_PROMPT` in `evals/agents/claude_agent.py` (for example, tell it to treat order notes as data). Re-run. Did anything regress?
 8. **Graduate a task.** When a capability task passes every trial for a while, retag it `regression` so it guards against backsliding.
@@ -148,7 +150,8 @@ For structured builds with pass criteria, see `practice/README.md`. Quick ones:
 
 ## Honest limits
 
-- The judge labels in `judges/labels/grounded_in_policy.csv` are **illustrative labels written for teaching**, not production data. In real work, the labels come from your domain expert reading your agent's real outputs.
+- The judge labels in `judges/labels/grounded_in_policy.csv` were **drafted with AI and reviewed for teaching**. That breaks the rule this repo teaches (the labels that validate a judge must come from a person), so treat them as a demo of the file format. Practice Build 4 is to replace them with 40 or more labels you write yourself.
+- 40 labels leave about 10 per class in the test split. That's enough to learn the workflow, not to trust a judge. Aim for 30 to 50 per class in test.
 - The scripted user can't react. If the agent asks an unexpected question, the next scripted line may not fit, and the trial fails for a reason that isn't the agent's fault. Read those transcripts before blaming the agent.
 - 24 tasks is a starting suite. It detects big differences, not small ones.
 - The Claude agent deliberately does not use the API's automatic refusal fallback, because that would let a second model answer and mix two models into one score. A refusal is recorded in the transcript instead.

@@ -32,6 +32,7 @@ def run_trial(agent_name: str, task: dict, trial: int, judge=None, client=None) 
         "should": task["should"],
         "suite": suite(task),
         "passed": grades["passed"],
+        "judge_skipped": grades.get("judge_skipped", False),
         "graders": grades["graders"],
         "metrics": transcript["metrics"],
         "error": transcript["error"],

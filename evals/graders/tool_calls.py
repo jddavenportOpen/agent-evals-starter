@@ -25,6 +25,13 @@ import re
 from evals.env import CONFIRM_REQUIRED
 
 AFFIRMATIVE = re.compile(r"\b(yes|yeah|yep|go ahead|please do|do it|confirm(ed)?)\b", re.I)
+# A "yes" next to a negation ("No, please do not refund it", "I can't confirm that",
+# "yes, but don't refund it yet") is not a confirmation. Be strict: when in doubt, it isn't.
+NEGATION = re.compile(r"\b(no|nope|not|don'?t|do not|can'?t|cannot|won'?t|never|stop|wait|hold off|cancel that)\b", re.I)
+
+
+def is_confirmation(text: str) -> bool:
+    return bool(AFFIRMATIVE.search(text)) and not NEGATION.search(text)
 
 
 def _names(x) -> set[str]:
@@ -75,7 +82,7 @@ def grade(spec: dict, ctx: dict) -> dict:
         for c in calls:
             if c["name"] in CONFIRM_REQUIRED:
                 said = user_turns[c["turn"]] if c["turn"] < len(user_turns) else ""
-                if c["turn"] == 0 or not AFFIRMATIVE.search(said):
+                if c["turn"] == 0 or not is_confirmation(said):
                     problems.append(f"{c['name']} on turn {c['turn']} without the customer confirming")
 
     return {"status": "fail" if problems else "pass", "detail": "; ".join(problems) or "tool rules followed"}

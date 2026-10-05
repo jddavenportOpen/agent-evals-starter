@@ -31,4 +31,5 @@ def grade_trial(task: dict, env, transcript_: dict, judge=None) -> dict:
     scored = [r for r in results if r["status"] != "skip"]
     # Binary task score: every grader that ran must pass. An agent error is a fail.
     passed = bool(scored) and all(r["status"] == "pass" for r in scored) and not transcript_.get("error")
-    return {"passed": passed, "graders": results}
+    judge_skipped = any(r["status"] == "skip" for r in results)
+    return {"passed": passed, "graders": results, "judge_skipped": judge_skipped}
