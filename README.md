@@ -2,7 +2,7 @@
 
 Learn agent evals by running them. One fictional store, one customer support agent, 24 tasks, four kinds of graders, and three baseline agents that run with no API key.
 
-This is the hands-on kit for day one of JD Davenport's **AI Core Skills** series: agent evals. The [deep dive](https://docs.google.com/document/d/1seaFylMwnWPMmO8idmWjMQkPozsxeHFJRyrW10ZgH4w/edit?usp=sharing) covers what top PM roles pay for this skill, where it came from, and how to build and validate an eval with AI. This repo is where you do it.
+This is the hands-on kit for day one of JD Davenport's **AI Core Skills** series: agent evals. The [deep dive](https://docs.google.com/document/d/1PY61qBgC16IMCblqTZZdiq5U3jPSM0pyAnEG6Qt5sIk/edit?usp=sharing) covers what top PM roles pay for this skill, where it came from, and how to build and validate an eval with AI. This repo is where you do it.
 
 ## What's in the kit
 
