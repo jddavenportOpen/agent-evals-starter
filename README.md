@@ -1,8 +1,12 @@
 # Agent Evals Starter
 
-Learn agent evals by running them. One fictional store, one customer support agent, 24 tasks, four kinds of graders, and three baseline agents that run with no API key.
+I wanted to learn agent evals by running one. So I built a small one: a fictional outdoor store, a customer support agent, 24 tasks, four kinds of graders, and three baseline agents that run with no API key.
 
-This is the hands-on kit for day one of JD Davenport's **AI Core Skills** series: agent evals. The [deep dive](https://docs.google.com/document/d/1PY61qBgC16IMCblqTZZdiq5U3jPSM0pyAnEG6Qt5sIk/edit?usp=sharing) covers what top PM roles pay for this skill, where it came from, and how to build and validate an eval with AI. This repo is where you do it.
+To try it, clone the repo, run `pip install -r requirements.txt`, then `python -m evals run --agent noop`. That agent does nothing at all. It still passes 6 of 24 tasks. Why that happens, and how to catch it, is most of what this repo teaches.
+
+It's the hands-on kit for the agent evals part of my AI Core Skills series. The [write-up](https://jddavenport.com/docs/ai-core-skills/agent-evals/) covers what top PM roles pay for this skill, where evals came from, and how to build and validate one with AI. This repo is where you do it.
+
+Most of this code was written by Claude Code agents I run. I pick what gets built, set the tests it has to pass, and check it by using it.
 
 ## What's in the kit
 
@@ -29,7 +33,7 @@ git clone https://github.com/jddavenportOpen/agent-evals-starter.git && cd agent
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-pytest -q                                   # 50 tests, all offline
+pytest -q                                   # 51 tests, all offline
 python -m evals run --agent reference       # the answer key: must score 100%
 python -m evals run --agent noop            # says "Sorry, I can't help" to everything
 python -m evals run --agent pushover        # does whatever the customer asks, instantly
@@ -115,7 +119,7 @@ Judge prompts live in `judges/*.md`. Each checks one thing, has pass and fail de
 
 - **pass@1**: average success rate per try, with a 95% Wilson interval.
 - **pass@k**: chance at least one of k tries succeeds. Fine when a user can retry.
-- **pass^k**: chance all k tries succeed. The honest number for a support agent, because every customer gets one shot. At 75% per try, pass^3 is about 42%.
+- **pass^k**: chance all k tries succeed. The number that matters for a support agent, because every customer gets one shot. At 75% per try, pass^3 is about 42%.
 
 With a few dozen tasks, the interval is wide: at 24 tasks and 70%, a 95% interval is about plus or minus 18 points. To compare two prompts, compare them task by task on the same tasks (paired), and don't read much into a few points either way. Trials of the same task aren't independent, so treat the interval as optimistic.
 
@@ -148,7 +152,7 @@ For structured builds with pass criteria, see `practice/README.md`. Quick ones:
 9. **Swap the scripted user for an LLM user.** Give a second model the customer's goal and let it reply in character, like tau-bench does. What new failures show up? What new noise?
 10. **Port a task to a real tool.** Rewrite one task as a Promptfoo YAML test or an Inspect AI task. Notice what maps cleanly and what doesn't.
 
-## Honest limits
+## Limits
 
 - The judge labels in `judges/labels/grounded_in_policy.csv` were **drafted with AI and reviewed for teaching**. That breaks the rule this repo teaches (the labels that validate a judge must come from a person), so treat them as a demo of the file format. Practice Build 4 is to replace them with 40 or more labels you write yourself.
 - 40 labels leave about 10 per class in the test split. That's enough to learn the workflow, not to trust a judge. Aim for 30 to 50 per class in test.
@@ -173,7 +177,7 @@ evals/report.py               report.md
 evals/review.py               review.csv for error analysis
 evals/validate_judge.py       TPR, TNR, kappa against labels
 docs/                         task template, failure taxonomy template
-tests/                        50 offline tests
+tests/                        51 offline tests
 ```
 
 ## Further reading
